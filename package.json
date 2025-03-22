@@ -5,6 +5,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "dev-local": "docker-compose up -d && nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -23,6 +24,7 @@
     "compodium": "^0.1.0-beta.5",
     "dayjs-nuxt": "^2.1.11",
     "eslint": "^9.22.0",
+    "mongoose": "^8.12.2",
     "nuxt": "^3.16.0",
     "typescript": "^5.8.2",
     "uuid": "^11.1.0",

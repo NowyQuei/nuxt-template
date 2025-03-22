@@ -56,7 +56,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       appName: 'Nuxt Starter Template'
-    }
+    },
+    mongodbUri: 'mongodb://localhost:27017/nuxt-template'
   },
 
   dayjs: {

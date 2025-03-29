@@ -14,14 +14,15 @@
 - Dark mode toggle (`UiColorModeButton`)
 - Global toast composable (`useAppToast`)
 - New **Nuxt 4 folder structure** (`app/`, `server/`, `shared/`, etc.)
+- MongoDB integration
+- Schema validation
 
 ---
 
 ## 🔧 Work in Progress
 
-- MongoDB integration
-- Schema validation
-- Writing user data to the database
+- Authentication system
+- User roles and role-based pages
 
 ---
 

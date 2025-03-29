@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 
 const userSchema = new Schema(
@@ -30,6 +30,7 @@ userSchema.pre(
     'findOneAndDelete',
     'findOneAndReplace',
     'findOneAndRemove',
+    'findById',
     'updateOne',
     'updateMany',
     'deleteOne',

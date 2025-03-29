@@ -6,7 +6,10 @@ onMounted(() => {
 })
 
 const items = ref([
-  [{ label: 'Home', icon: 'i-lucide-home', to: '/' }],
+  [
+    { label: 'Home', icon: 'i-lucide-home', to: '/' },
+    { label: 'Users', icon: 'i-lucide-users', to: '/users' }
+  ],
   [{ label: 'Registration', icon: 'i-lucide-key-round', to: '/registration' }],
   [{ label: 'Dark Mode', slot: 'darkMode', type: 'button' }]
 ])

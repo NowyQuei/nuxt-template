@@ -28,3 +28,18 @@ export async function createUser(input: unknown) {
   const user = await UserSchema.create(parsed.data)
   return user
 }
+
+export async function getUserById(id: string) {
+  const user = await UserSchema.findById(id)
+  return user ? sanitizeUser(user) : null
+}
+
+export async function getUsers() {
+  const users = await UserSchema.find()
+  return users.map(sanitizeUser)
+}
+
+export async function deleteUser(id: string) {
+  const user = await UserSchema.findByIdAndDelete(id)
+  return user ? sanitizeUser(user) : null
+}

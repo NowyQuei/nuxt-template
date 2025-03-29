@@ -4,7 +4,7 @@ export async function apiRequest<T>(url: string, options: RequestInit = {}): Pro
     if (!response.ok) throw new Error(`Error: ${response.status}`)
     return response.json()
   } catch (error) {
-    console.error(error)
+    logger.error(error)
     throw error
   }
 }

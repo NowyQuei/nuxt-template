@@ -35,13 +35,5 @@ export function useFormUser(
     state.birthday = newDate.toDate(getLocalTimeZone())
   })
 
-  const isFormValid = computed(() => {
-    const formData = toRaw({ ...state })
-    const validationResult = schemaWithoutId.safeParse(formData)
-    logger.debug('useFormUser Validation result:', validationResult)
-    logger.debug('useFormUser Form Data (processed for validation):', formData)
-    return validationResult.success
-  })
-
-  return { state, calendarDate, df, isFormValid }
+  return { state, calendarDate, df }
 }

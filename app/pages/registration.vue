@@ -17,7 +17,7 @@ const defaultUser = {
   birthday: defaultBirthday
 }
 
-async function handleUserSubmit(data: Partial<z.infer<typeof UserSchema>>) {
+async function handleUserSubmit(data: Partial<z.infer<typeof ZUser>>) {
   logger.info('Sending this data to API:', data)
   try {
     await $fetch('/api/users', {
@@ -28,6 +28,7 @@ async function handleUserSubmit(data: Partial<z.infer<typeof UserSchema>>) {
     logger.error('Error creating user:', error)
     throw error // ⚠️ This is important
   }
+  navigateTo('/')
 }
 </script>
 

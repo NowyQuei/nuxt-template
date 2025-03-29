@@ -2,7 +2,7 @@ import { z } from 'zod'
 import dayjs from 'dayjs'
 import { v4 as uuidv4 } from 'uuid' // ✅ Import UUID generator
 
-export const UserSchema = z.object({
+export const ZUser = z.object({
   id: z
     .string()
     .uuid()
@@ -18,7 +18,7 @@ export const UserSchema = z.object({
   lastName: z.string().min(1, 'Last name is required').max(50),
   email: z.string().email('Invalid email address'),
 
-  birthday: z.date().refine((date) => {
+  birthday: z.coerce.date().refine((date) => {
     return dayjs(date).isValid() && dayjs().diff(dayjs(date), 'year') >= 18
   }, 'User must be at least 18 years old'),
 
@@ -35,4 +35,12 @@ export const UserSchema = z.object({
 })
 
 // Infer TypeScript types
-export type User = z.infer<typeof UserSchema>
+export type User = z.infer<typeof ZUser>
+
+export const ZUserWithMeta = ZUser.extend({
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  __v: z.number().optional()
+})
+
+export type UserWithMeta = z.infer<typeof ZUserWithMeta>

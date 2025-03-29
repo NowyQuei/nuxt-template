@@ -52,6 +52,7 @@
 | `compodium`          | Markdown-driven UI/component documentation |
 | `vue` / `vue-router` | Core Vue 3 + routing                       |
 | `typescript`         | Type safety and DX improvements            |
+| `mongoose`           | Package to work with mongodb               |
 
 ---
 

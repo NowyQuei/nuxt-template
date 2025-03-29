@@ -1,16 +1,67 @@
 <script setup lang="ts">
 import { z } from 'zod'
+import type { FormSubmitEvent } from '@nuxt/ui'
 
 const props = defineProps<{
-  user: Partial<z.infer<typeof UserSchema>>
-  submit: (data: Partial<z.infer<typeof UserSchema>>) => Promise<void>
+  user: Partial<z.infer<typeof ZUser>>
+  submit: (data: Partial<z.infer<typeof ZUser>>) => Promise<void>
   formTitle?: string
 }>()
 
-const { state, calendarDate, df, isFormValid } = useFormUser(UserSchema, props.user)
+const { state, calendarDate, df } = useFormUser(ZUser, props.user)
 const toast = useAppToast()
+const form = ref()
 
-async function onSubmit(event: FormSubmitEvent) {
+const {
+  checkAvailability: checkUsername,
+  available: usernameAvailable,
+  checking: checkingUsername
+} = useUserAvailability()
+
+const {
+  checkAvailability: checkEmail,
+  available: emailAvailable,
+  checking: checkingEmail
+} = useUserAvailability()
+
+async function onUsernameBlur() {
+  if (state.username) {
+    await checkUsername('username', state.username)
+  }
+}
+
+async function onEmailBlur() {
+  if (state.email) {
+    await checkEmail('email', state.email)
+  }
+}
+
+async function preSubmitCheck(): Promise<boolean> {
+  let ok = true
+
+  if (state.username) {
+    await checkUsername('username', state.username)
+    if (usernameAvailable.value === false) {
+      toast.error('Username is already taken.')
+      ok = false
+    }
+  }
+
+  if (state.email) {
+    await checkEmail('email', state.email)
+    if (emailAvailable.value === false) {
+      toast.error('Email is already in use.')
+      ok = false
+    }
+  }
+
+  return ok
+}
+
+async function onSubmit(event: FormSubmitEvent<z.infer<typeof ZUser>>) {
+  const valid = await preSubmitCheck()
+  if (!valid) return
+
   try {
     await props.submit(event.data)
     toast.success('User data saved successfully.')
@@ -28,9 +79,27 @@ async function onSubmit(event: FormSubmitEvent) {
       </slot>
     </template>
 
-    <UForm :state="state" class="space-y-2" @submit="onSubmit">
+    <UForm
+      ref="form"
+      :state="state"
+      :schema="ZUser.omit({ id: true })"
+      class="space-y-2"
+      @submit="onSubmit"
+    >
       <UFormField label="Username" name="username" required>
-        <UInput class="w-full" v-model="state.username" placeholder="Enter your username" />
+        <template #description>
+          <span v-if="checkingUsername">Checking username...</span>
+          <span v-else-if="usernameAvailable === false" class="text-red-500">Username taken</span>
+          <span v-else-if="usernameAvailable === true" class="text-green-500"
+            >Username available</span
+          >
+        </template>
+        <UInput
+          class="w-full"
+          v-model="state.username"
+          placeholder="Enter your username"
+          @blur="onUsernameBlur"
+        />
       </UFormField>
 
       <div class="flex gap-x-4">
@@ -43,11 +112,17 @@ async function onSubmit(event: FormSubmitEvent) {
       </div>
 
       <UFormField label="Email" name="email" required>
+        <template #description>
+          <span v-if="checkingEmail">Checking email...</span>
+          <span v-else-if="emailAvailable === false" class="text-red-500">Email in use</span>
+          <span v-else-if="emailAvailable === true" class="text-green-500">Email available</span>
+        </template>
         <UInput
           class="w-full"
           icon="i-lucide-at-sign"
           v-model="state.email"
           placeholder="Enter your email"
+          @blur="onEmailBlur"
         />
       </UFormField>
 
@@ -65,15 +140,7 @@ async function onSubmit(event: FormSubmitEvent) {
 
       <FormPasswordInput v-model="state.password" />
 
-      <UButton
-        class="mt-4"
-        type="submit"
-        block
-        :color="isFormValid ? 'primary' : 'neutral'"
-        :disabled="!isFormValid"
-      >
-        Save
-      </UButton>
+      <UButton type="submit" block color="primary"> Save </UButton>
     </UForm>
 
     <template #footer>

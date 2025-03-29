@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const testUser: z.infer<typeof UserSchema> = {
+const testUser: z.infer<typeof ZUser> = {
   id: '4dcf618a-8844-450b-882e-62317f709b07',
   username: 'testuser',
   firstName: 'Test',

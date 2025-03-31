@@ -1,4 +1,5 @@
 import { UserSchema } from '@@/server/models/userSchema'
+import CredentialsSchema from '@@/server/models/credentialsSchema'
 import bcrypt from 'bcrypt'
 
 export async function createUser(input: unknown) {
@@ -64,4 +65,40 @@ export async function getUserByUsernameWithPassword(username: string) {
   sanitized.password = user.password
 
   return sanitized
+}
+
+export async function addPasskey(
+  userId: string,
+  credential: {
+    publicKey: string
+    counter: number
+    backedUp: boolean
+    transports: string[]
+    name: string
+  }
+) {
+  const existing = await CredentialsSchema.findOne({
+    userId,
+    publicKey: credential.publicKey
+  })
+
+  if (existing) {
+    logger.info('Credential already exists for user:', userId)
+    return
+  }
+
+  const newCredential = await CredentialsSchema.create({
+    userId,
+    publicKey: credential.publicKey,
+    counter: credential.counter,
+    backedUp: credential.backedUp ? 1 : 0,
+    transports: credential.transports.join(','),
+    name: credential.name
+  })
+
+  await UserSchema.findByIdAndUpdate(userId, {
+    $addToSet: { credentials: newCredential._id }
+  })
+
+  logger.success(`Passkey "${newCredential.name}" added to user ${userId}`)
 }

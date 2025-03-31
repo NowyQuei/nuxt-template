@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const isLoaded = ref(false)
-const { loggedIn, user, session } = useUserSession()
+const { loggedIn, user, session, fetch } = useUserSession()
+const toast = useToast()
 
 onMounted(() => {
   isLoaded.value = true
@@ -21,6 +22,7 @@ watch(
     <!-- Left column -->
     <div class="w-full lg:w-1/4 p-4">
       <p class="text-sm text-gray-600">Left sidebar content</p>
+      <FormAddPasskey v-if="loggedIn" class="mt-4" />
     </div>
 
     <!-- Middle column -->

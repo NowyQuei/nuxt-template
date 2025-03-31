@@ -8,7 +8,8 @@ const credentialsSchema = new Schema(
     publicKey: { type: String, required: true },
     counter: { type: Number, default: 1 },
     backedUp: { type: Number, default: 0 },
-    transports: { type: String, required: true }
+    transports: { type: String, required: true },
+    name: { type: String, required: true }
   },
   {
     timestamps: true

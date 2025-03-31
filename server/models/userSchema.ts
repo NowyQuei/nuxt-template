@@ -10,6 +10,7 @@ const userSchema = new Schema(
     email: { type: String, unique: true },
     birthday: Date,
     password: String,
+    credentials: [{ type: Schema.Types.UUID, ref: 'Credentials' }],
     role: String,
     isActive: Boolean,
     profileImage: String

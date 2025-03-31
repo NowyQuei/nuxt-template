@@ -13,7 +13,8 @@ export const zCredentials = z.object({
   publicKey: z.string(),
   counter: z.number().default(1),
   backedUp: z.number().default(0),
-  transports: z.string()
+  transports: z.string(),
+  name: z.string().min(1, 'Name is required')
 })
 
 export type Credentials = z.infer<typeof zCredentials>

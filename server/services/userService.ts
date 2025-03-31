@@ -11,7 +11,6 @@ export async function createUser(input: unknown) {
     throw error
   }
 
-  // Check if user already exists
   const existingUser = await UserSchema.findOne({ email: parsed.data.email })
   if (existingUser) {
     const error = new Error('User already exists')
@@ -19,7 +18,6 @@ export async function createUser(input: unknown) {
     throw error
   }
 
-  // check if username already exists
   const existingUsername = await UserSchema.findOne({ username: parsed.data.username })
   if (existingUsername) {
     const error = new Error('Username already exists')
@@ -45,6 +43,11 @@ export async function getUsers() {
 
 export async function deleteUser(id: string) {
   const user = await UserSchema.findByIdAndDelete(id)
+  return user ? sanitizeUser(user) : null
+}
+
+export async function updateUser(id: string, updates: Partial<zUser>) {
+  const user = await UserSchema.findByIdAndUpdate(id, updates, { new: true })
   return user ? sanitizeUser(user) : null
 }
 
@@ -76,6 +79,13 @@ export async function addPasskey(userId: string, credential: zCredentials) {
   if (existing) {
     logger.info('Credential already exists for user:', userId)
     return
+  }
+
+  const sameName = await CredentialsSchema.findOne({ userId, name: credential.name })
+  if (sameName) {
+    const error = new Error(`Passkey name "${credential.name}" already exists for this user`)
+    error.cause = { name: 'Duplicate passkey name' }
+    throw error
   }
 
   const newCredential = await CredentialsSchema.create({

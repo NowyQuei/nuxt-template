@@ -12,6 +12,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const session = await getUserSession(event)
+
+  if (session?.user?.role !== 'admin' && session?.user?.id !== userId) {
+    return createApiError(event, {
+      code: 'unauthorized',
+      message: 'You are not authorized to get this user.',
+      status: 403
+    })
+  }
+
   const user = await getUserById(userId)
 
   if (user === null) {

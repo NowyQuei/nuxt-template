@@ -12,7 +12,6 @@ const UCheckbox = resolveComponent('UCheckbox')
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
-const toast = useAppToast()
 const table = useTemplateRef('table')
 const rowSelection = ref({})
 const globalFilter = ref('')

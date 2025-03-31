@@ -27,6 +27,7 @@ export default defineWebAuthnRegisterEventHandler({
     }
 
     await addPasskey(userId, {
+      credentialId: credential.id,
       publicKey: credential.publicKey,
       counter: credential.counter,
       backedUp: credential.backedUp,

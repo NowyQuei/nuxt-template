@@ -46,9 +46,17 @@ export async function deleteUser(id: string) {
   return user ? sanitizeUser(user) : null
 }
 
-export async function updateUser(id: string, updates: Partial<zUser>) {
-  const user = await UserSchema.findByIdAndUpdate(id, updates, { new: true })
-  return user ? sanitizeUser(user) : null
+export async function updateUser(id: string, data: Partial<zUser>) {
+  if (data.password) {
+    data.password = await bcrypt.hash(data.password, 10)
+  }
+
+  const updatedUser = await UserSchema.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true
+  })
+
+  return updatedUser ? sanitizeUser(updatedUser) : null
 }
 
 export async function getUserByUsername(username: string) {
@@ -90,6 +98,7 @@ export async function addPasskey(userId: string, credential: zCredentials) {
 
   const newCredential = await CredentialsSchema.create({
     userId,
+    credentialId: credential.credentialId,
     publicKey: credential.publicKey,
     counter: credential.counter,
     backedUp: credential.backedUp ? 1 : 0,

@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 import dayjs from 'dayjs'
 
-const toast = useToast()
 const { fetch } = useUserSession()
 
 const defaultBirthday = dayjs().subtract(18, 'years').subtract(1, 'day').startOf('day').toDate()
@@ -18,20 +17,40 @@ const defaultUser = {
   birthday: defaultBirthday
 }
 
-async function handleUserSubmit(data: Partial<z.infer<typeof zUser>>) {
+async function handleUserSubmit(
+  data: Partial<z.infer<typeof zUser>> & {
+    createPasskey?: boolean
+    passkeyName?: string
+  }
+) {
   logger.info('Sending this data to API:', data)
+
   try {
     await $fetch('/api/auth/signup', {
       method: 'POST',
       body: JSON.stringify(data)
     })
     await fetch()
-    toast.add({ title: 'Success', description: 'Your are logged in', color: 'success' })
+    $toast.success('User created successfully.')
+
+    if (data.createPasskey && data.passkeyName) {
+      const { register } = useWebAuthn()
+      try {
+        await register({ userName: data.email!, name: data.passkeyName })
+        await fetch()
+        $toast.success('Passkey created successfully.')
+      } catch (e) {
+        $toast.error('Passkey registration failed.')
+        logger.error(e)
+      }
+    }
+
+    await navigateTo('/')
+    window.location.reload()
   } catch (error) {
     logger.error('Error creating user:', error)
-    throw error // ⚠️ This is important
+    throw error
   }
-  navigateTo('/')
 }
 </script>
 

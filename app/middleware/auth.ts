@@ -7,6 +7,7 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   const userRole = session.value?.user?.role
+  logger.info('User role:', userRole)
 
   // **Map Roles to Their Allowed Routes**
   const roleRoutes: Record<string, string[]> = {

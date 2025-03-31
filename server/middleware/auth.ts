@@ -4,6 +4,11 @@ export default defineEventHandler(async (event) => {
     return // ✅ Allow access without authentication
   }
 
+  // if routes starts with buildInRoutes, allow access without authentication
+  if (buildInRoutes.some((route) => event.path.startsWith(route))) {
+    return // ✅ Allow access without authentication
+  }
+
   const session = await getUserSession(event)
   if (!session || !session.user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
@@ -16,6 +21,10 @@ export default defineEventHandler(async (event) => {
   }
 
   if (session.user.role === 'admin' && event.path.startsWith('/api/')) {
+    return // ✅ Allow access for authenticated admins
+  }
+
+  if (session.user.role === 'user' && event.path.startsWith('/api/')) {
     return // ✅ Allow access for authenticated admins
   }
 

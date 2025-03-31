@@ -12,12 +12,11 @@ onMounted(() => {
     <!-- Left column -->
     <div class="w-full lg:w-1/4 p-4">
       <p class="text-sm text-gray-600">Left sidebar content</p>
-      <FormAddPasskey v-if="loggedIn" class="mt-4" />
     </div>
 
     <!-- Middle column -->
     <div class="w-full lg:w-1/2 p-6 flex justify-center items-center">
-      <UiCard v-if="loggedIn" class="w-full max-w-xl">
+      <UiCard v-if="loggedIn && isLoaded" class="w-full max-w-xl">
         <template #header>
           <h1 class="text-lg font-semibold text-center">Home</h1>
         </template>
@@ -31,7 +30,11 @@ onMounted(() => {
           <p class="text-xs text-center text-gray-500 mb-2">Session ID: {{ session.id }}</p>
         </template>
       </UiCard>
-      <AuthLogin v-else />
+      <div v-else>
+        <!-- <AuthLogin />
+        <AuthPasskeyLogin /> -->
+        <AuthUnifiedLogin />
+      </div>
     </div>
 
     <!-- Right column -->

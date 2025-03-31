@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { useDayjs } from '#dayjs'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 
+const isLoggedIn = useUserSession().loggedIn
+
 export function useFormUser(
   schema: z.ZodSchema<any>,
   initialUser?: Partial<z.infer<typeof schema>>
@@ -14,13 +16,20 @@ export function useFormUser(
   const defaultBirthday = dayjs().subtract(18, 'years')
 
   // ✅ Merge initial user data with defaults
-  const state = reactive<Partial<z.infer<typeof schemaWithoutId>>>({
+  const state = reactive<
+    Partial<z.infer<typeof schemaWithoutId>> & {
+      createPasskey: boolean
+      passkeyName: string
+    }
+  >({
     username: initialUser?.username || '',
     firstName: initialUser?.firstName || '',
     lastName: initialUser?.lastName || '',
     email: initialUser?.email || '',
-    password: initialUser?.password || '',
-    birthday: initialUser?.birthday ? new Date(initialUser.birthday) : defaultBirthday.toDate()
+    password: isLoggedIn.value ? '' : initialUser?.password || '', // ✅ Empty on settings page
+    birthday: initialUser?.birthday ? new Date(initialUser.birthday) : defaultBirthday.toDate(),
+    createPasskey: true,
+    passkeyName: ''
   })
 
   const calendarDate = shallowRef(

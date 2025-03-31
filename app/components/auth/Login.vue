@@ -20,8 +20,6 @@ const state = reactive({
   password: '*gsThXqsAA4_RcWxPEwacCTB'
 })
 
-const toast = useToast()
-
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   logger.debug('Form submitted:', event.data)
 
@@ -34,13 +32,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     if (response.data && 'username' in response.data) {
       logger.debug('Login successful:', JSON.stringify(response.data, null, 2))
       await fetch()
-      toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
+      $toast.success('Login successful')
     } else {
       errorMessage.value = 'Invalid username or password.'
     }
   } catch (error) {
     errorMessage.value = '❌ Login failed. Please check your credentials.'
-    toast.add({ title: 'Error', description: errorMessage.value, color: 'error' })
+    $toast.error(errorMessage.value)
     logger.error('Login Error:', error)
   } finally {
     isLoading.value = false

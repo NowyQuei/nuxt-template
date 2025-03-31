@@ -2,6 +2,15 @@ import { createUser } from '@@/server/services/userService'
 
 export default defineEventHandler(async (event) => {
   logger.info('triggered /api/users/index.post.ts')
+  const session = await getUserSession(event)
+
+  if (session?.user?.role !== 'admin') {
+    return createApiError(event, {
+      code: 'unauthorized',
+      message: 'You are not authorized.',
+      status: 403
+    })
+  }
 
   try {
     const body = await readBody(event)

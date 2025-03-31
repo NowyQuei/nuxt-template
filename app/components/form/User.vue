@@ -8,8 +8,10 @@ const props = defineProps<{
   formTitle?: string
 }>()
 
+const originalUsername = props.user.username
+const originalEmail = props.user.email
+const { loggedIn } = useUserSession()
 const { state, calendarDate, df } = useFormUser(zUser, props.user)
-const toast = useAppToast()
 const form = ref()
 
 const {
@@ -24,14 +26,18 @@ const {
   checking: checkingEmail
 } = useUserAvailability()
 
+const formSchema = computed(() => {
+  return loggedIn.value ? zUser.omit({ id: true, password: true }) : zUser.omit({ id: true })
+})
+
 async function onUsernameBlur() {
-  if (state.username) {
+  if (state.username && state.username !== originalUsername) {
     await checkUsername('username', state.username)
   }
 }
 
 async function onEmailBlur() {
-  if (state.email) {
+  if (state.email && state.email !== originalEmail) {
     await checkEmail('email', state.email)
   }
 }
@@ -39,18 +45,18 @@ async function onEmailBlur() {
 async function preSubmitCheck(): Promise<boolean> {
   let ok = true
 
-  if (state.username) {
+  if (state.username && state.username !== originalUsername) {
     await checkUsername('username', state.username)
     if (usernameAvailable.value === false) {
-      toast.error('Username is already taken.')
+      $toast.error('Username is already taken.')
       ok = false
     }
   }
 
-  if (state.email) {
+  if (state.email && state.email !== originalEmail) {
     await checkEmail('email', state.email)
     if (emailAvailable.value === false) {
-      toast.error('Email is already in use.')
+      $toast.error('Email is already in use.')
       ok = false
     }
   }
@@ -64,11 +70,29 @@ async function onSubmit(event: FormSubmitEvent<z.infer<typeof zUser>>) {
 
   try {
     await props.submit(event.data)
-    toast.success('User data saved successfully.')
+    $toast.success('User data saved successfully.')
   } catch (error) {
-    toast.error('There was a problem saving the user.')
+    $toast.error('There was a problem saving the user.')
   }
 }
+
+watch(
+  () => state.username,
+  (newVal) => {
+    if (newVal === originalUsername) {
+      usernameAvailable.value = null
+    }
+  }
+)
+
+watch(
+  () => state.email,
+  (newVal) => {
+    if (newVal === originalEmail) {
+      emailAvailable.value = null
+    }
+  }
+)
 </script>
 
 <template>
@@ -79,13 +103,7 @@ async function onSubmit(event: FormSubmitEvent<z.infer<typeof zUser>>) {
       </slot>
     </template>
 
-    <UForm
-      ref="form"
-      :state="state"
-      :schema="zUser.omit({ id: true })"
-      class="space-y-2"
-      @submit="onSubmit"
-    >
+    <UForm ref="form" :state="state" :schema="formSchema" class="space-y-2" @submit="onSubmit">
       <UFormField label="Username" name="username" required>
         <template #description>
           <span v-if="checkingUsername">Checking username...</span>
@@ -138,12 +156,23 @@ async function onSubmit(event: FormSubmitEvent<z.infer<typeof zUser>>) {
         </UPopover>
       </UFormField>
 
+      <UFormField v-if="!loggedIn" name="createPasskey" class="mt-4 mb-4">
+        <UCheckbox
+          v-model="state.createPasskey"
+          label="Register a passkey after account creation"
+        />
+      </UFormField>
+
+      <UFormField v-if="state.createPasskey && !loggedIn" label="Passkey Name" name="passkeyName">
+        <UInput v-model="state.passkeyName" placeholder="e.g. MacBook Touch ID" class="w-full" />
+      </UFormField>
+
       <FormPasswordInput v-model="state.password" />
 
       <UButton type="submit" block color="primary"> Save </UButton>
     </UForm>
 
-    <template #footer>
+    <template v-if="!loggedIn" #footer>
       <slot name="footer">
         <p class="text-sm text-gray-500 text-center">
           After registration, you will receive an email to verify your email address.

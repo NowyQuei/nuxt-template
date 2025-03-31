@@ -11,6 +11,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const session = await getUserSession(event)
+
+  if (session?.user?.role !== 'admin' && session?.user?.id !== userId) {
+    return createApiError(event, {
+      code: 'unauthorized',
+      message: 'You are not authorized to delete this user.',
+      status: 403
+    })
+  }
+
   const user = await deleteUser(userId)
 
   if (user === null) {

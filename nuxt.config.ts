@@ -22,7 +22,8 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxtjs/device',
     'dayjs-nuxt',
-    'compodium'
+    'compodium',
+    'nuxt-auth-utils'
   ],
 
   app: {
@@ -55,7 +56,23 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      appName: 'Nuxt Starter Template'
+      appName: 'Nuxt Starter Template',
+      auth: {
+        globalMiddleware: false, // Set to true if you want auth checks everywhere
+        redirect: {
+          login: '/',
+          logout: '/',
+          home: '/'
+        }
+      }
+    },
+    session: {
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      name: 'kga-session',
+      password: 'F!!UPsERLH7HzW2Yd!g-vDhEEybs4sXB',
+      cookie: {
+        sameSite: 'lax'
+      }
     },
     mongodbUri: 'mongodb://localhost:27017/nuxt-template'
   },
@@ -71,5 +88,9 @@ export default defineNuxtConfig({
     theme: {
       colors: ['primary', 'secondary', 'info', 'success', 'warning', 'error']
     }
+  },
+
+  auth: {
+    webAuthn: true
   }
 })

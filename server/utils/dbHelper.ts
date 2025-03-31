@@ -1,6 +1,5 @@
-/**
- * ✅ Validate and sanitize user input
- */
+import { z } from 'zod'
+
 export function validateUserInput(body: any) {
   // ✅ Convert birthday to a Date if it's a string
   if (typeof body.birthday === 'string') {
@@ -13,7 +12,7 @@ export function validateUserInput(body: any) {
   }
 
   // ✅ Validate user data with Zod
-  const parsedUser = ZUser.omit({ id: true }).safeParse(body)
+  const parsedUser = zUser.omit({ id: true }).safeParse(body)
 
   if (!parsedUser.success) {
     return { success: false, errors: formatZodErrors(parsedUser.error) }
@@ -25,15 +24,14 @@ export function validateUserInput(body: any) {
 /**
  * ✅ Removes sensitive fields from user data
  * - Removes `password`
- * - Removes `role`
  * - Removes `isActive`
  */
 export function sanitizeUser(user: unknown) {
   const plainUser =
     typeof user === 'object' && user !== null && 'toJSON' in user ? (user as any).toJSON() : user
 
-  const { password, role, isActive, __v, createdAt, updatedAt, ...safe } = plainUser as z.infer<
-    typeof ZUserWithMeta
+  const { password, isActive, __v, createdAt, updatedAt, ...safe } = plainUser as z.infer<
+    typeof zUserWithMeta
   >
 
   return safe

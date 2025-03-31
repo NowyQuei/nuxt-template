@@ -1,7 +1,8 @@
 import { UserSchema } from '@@/server/models/userSchema'
+import bcrypt from 'bcrypt'
 
 export async function createUser(input: unknown) {
-  const parsed = ZUser.safeParse(input)
+  const parsed = zUser.safeParse(input)
 
   if (!parsed.success) {
     const error = new Error('Validation failed')
@@ -25,8 +26,10 @@ export async function createUser(input: unknown) {
     throw error
   }
 
+  parsed.data.password = await bcrypt.hash(parsed.data.password, 10)
+
   const user = await UserSchema.create(parsed.data)
-  return user
+  return sanitizeUser(user)
 }
 
 export async function getUserById(id: string) {
@@ -42,4 +45,23 @@ export async function getUsers() {
 export async function deleteUser(id: string) {
   const user = await UserSchema.findByIdAndDelete(id)
   return user ? sanitizeUser(user) : null
+}
+
+export async function getUserByUsername(username: string) {
+  const user = await UserSchema.findOne({ username })
+  return user ? sanitizeUser(user) : null
+}
+
+export async function getUserByUsernameWithPassword(username: string) {
+  const user = await UserSchema.findOne({ username })
+  if (!user) {
+    const error = new Error('User not found')
+    error.cause = { username: 'User not found' }
+    throw error
+  }
+
+  const sanitized = sanitizeUser(user) as User
+  sanitized.password = user.password
+
+  return sanitized
 }

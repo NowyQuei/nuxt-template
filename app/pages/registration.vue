@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 import dayjs from 'dayjs'
 
-const toast = useAppToast()
+const toast = useToast()
+const { fetch } = useUserSession()
 
 const defaultBirthday = dayjs().subtract(18, 'years').subtract(1, 'day').startOf('day').toDate()
 
@@ -13,17 +14,19 @@ const defaultUser = {
   firstName: 'testi',
   lastName: 'tester',
   email: 'test@test.com',
-  password: 'Start.1234567',
+  password: '*gsThXqsAA4_RcWxPEwacCTB',
   birthday: defaultBirthday
 }
 
-async function handleUserSubmit(data: Partial<z.infer<typeof ZUser>>) {
+async function handleUserSubmit(data: Partial<z.infer<typeof zUser>>) {
   logger.info('Sending this data to API:', data)
   try {
-    await $fetch('/api/users', {
+    await $fetch('/api/auth/signup', {
       method: 'POST',
       body: JSON.stringify(data)
     })
+    await fetch()
+    toast.add({ title: 'Success', description: 'Your are logged in', color: 'success' })
   } catch (error) {
     logger.error('Error creating user:', error)
     throw error // ⚠️ This is important

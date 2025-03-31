@@ -3,12 +3,12 @@ import { z } from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const props = defineProps<{
-  user: Partial<z.infer<typeof ZUser>>
-  submit: (data: Partial<z.infer<typeof ZUser>>) => Promise<void>
+  user: Partial<z.infer<typeof zUser>>
+  submit: (data: Partial<z.infer<typeof zUser>>) => Promise<void>
   formTitle?: string
 }>()
 
-const { state, calendarDate, df } = useFormUser(ZUser, props.user)
+const { state, calendarDate, df } = useFormUser(zUser, props.user)
 const toast = useAppToast()
 const form = ref()
 
@@ -58,7 +58,7 @@ async function preSubmitCheck(): Promise<boolean> {
   return ok
 }
 
-async function onSubmit(event: FormSubmitEvent<z.infer<typeof ZUser>>) {
+async function onSubmit(event: FormSubmitEvent<z.infer<typeof zUser>>) {
   const valid = await preSubmitCheck()
   if (!valid) return
 
@@ -82,7 +82,7 @@ async function onSubmit(event: FormSubmitEvent<z.infer<typeof ZUser>>) {
     <UForm
       ref="form"
       :state="state"
-      :schema="ZUser.omit({ id: true })"
+      :schema="zUser.omit({ id: true })"
       class="space-y-2"
       @submit="onSubmit"
     >

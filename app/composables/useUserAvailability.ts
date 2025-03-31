@@ -10,7 +10,8 @@ export function useUserAvailability() {
 
     try {
       const result = await $fetch('/api/users/check-availability', {
-        query: { [field]: value }
+        method: 'POST',
+        body: { [field]: value }
       })
       available.value = result.data?.available ?? null
     } catch (err) {

@@ -1,5 +1,13 @@
 <script setup lang="ts">
 logger.debug('App component loaded')
+
+const { loggedIn } = useUserSession()
+
+watch(loggedIn, () => {
+  if (!loggedIn.value) {
+    navigateTo('/')
+  }
+})
 </script>
 
 <template>

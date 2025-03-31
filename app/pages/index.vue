@@ -1,20 +1,10 @@
 <script setup lang="ts">
 const isLoaded = ref(false)
-const { loggedIn, user, session, fetch } = useUserSession()
-const toast = useToast()
+const { loggedIn, user, session } = useUserSession()
 
 onMounted(() => {
   isLoaded.value = true
 })
-
-const isLoggedIn = ref(false)
-
-watch(
-  () => session.value.user?.username,
-  (newValue) => {
-    isLoggedIn.value = !!newValue
-  }
-)
 </script>
 
 <template>
@@ -32,12 +22,9 @@ watch(
           <h1 class="text-lg font-semibold text-center">Home</h1>
         </template>
 
-        <div v-if="loggedIn">
+        <div>
           <h1 class="text-xl font-semibold text-center mb-2">Welcome, {{ user?.username }}!</h1>
           <p class="text-sm text-center mb-2">Logged in since: {{ session.loggedInAt }}</p>
-        </div>
-        <div v-else>
-          <p class="text-center">Welcome to the home page</p>
         </div>
 
         <template #footer>

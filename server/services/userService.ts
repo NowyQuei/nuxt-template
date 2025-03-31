@@ -67,16 +67,7 @@ export async function getUserByUsernameWithPassword(username: string) {
   return sanitized
 }
 
-export async function addPasskey(
-  userId: string,
-  credential: {
-    publicKey: string
-    counter: number
-    backedUp: boolean
-    transports: string[]
-    name: string
-  }
-) {
+export async function addPasskey(userId: string, credential: zCredentials) {
   const existing = await CredentialsSchema.findOne({
     userId,
     publicKey: credential.publicKey

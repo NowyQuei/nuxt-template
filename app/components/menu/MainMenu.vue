@@ -16,28 +16,28 @@ function logout() {
   })
 }
 
-const items = computed(() => {
-  const leftSection = [{ label: 'Home', icon: 'i-lucide-home', to: '/' }]
-  const middleSection = []
-  const rightSection = [{ label: 'Dark Mode', slot: 'darkMode', type: 'button' }]
+const navigationItems = computed(() => {
+  const left = [{ label: 'Home', icon: 'i-lucide-home', to: '/' }]
+  const middle = []
+  const right = [{ label: 'Dark Mode', slot: 'darkMode', type: 'button' }]
 
   if (loggedIn.value) {
-    rightSection.unshift({ label: 'Login', slot: 'loginButton', type: 'button' })
+    right.unshift({ label: 'Login', slot: 'loginButton', type: 'button' })
   } else {
-    rightSection.unshift({ label: 'Registration', icon: 'i-lucide-key-round', to: '/registration' })
+    right.unshift({ label: 'Registration', icon: 'i-lucide-key-round', to: '/registration' })
   }
 
   if (session.value?.user?.role === 'admin') {
-    leftSection.push({ label: 'Users', icon: 'i-lucide-users', to: '/users' })
+    left.push({ label: 'Users', icon: 'i-lucide-users', to: '/users' })
   }
 
-  return [leftSection, middleSection, rightSection]
+  return [left, middle, right]
 })
 </script>
 
 <template>
   <div v-show="isLoaded">
-    <UNavigationMenu :items="items" class="w-full mb-3 px-2">
+    <UNavigationMenu :items="navigationItems" class="w-full mb-3 px-2">
       <!-- ✅ Login Button Slot -->
       <template v-if="loggedIn" #loginButton>
         <UButton icon="i-lucide-log-in" @click="logout" color="primary" variant="link" />

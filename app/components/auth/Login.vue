@@ -23,7 +23,7 @@ const state = reactive({
 const toast = useToast()
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  logger.info('Form submitted:', event.data)
+  logger.debug('Form submitted:', event.data)
 
   try {
     const response = await $fetch('/api/auth/login', {
@@ -32,7 +32,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     })
 
     if (response.data && 'username' in response.data) {
-      logger.info('Login successful:', JSON.stringify(response.data, null, 2))
+      logger.debug('Login successful:', JSON.stringify(response.data, null, 2))
       await fetch()
       toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
     } else {

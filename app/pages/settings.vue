@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { useUserSession } from '#imports'
-
 const isLoaded = ref(false)
-const { loggedIn, session, fetch } = useUserSession()
+const session = ref()
+const fetchSession = ref<() => Promise<void>>()
 
-onMounted(() => {
+onMounted(async () => {
+  const { session: s, fetch } = useUserSession()
+  session.value = s.value
+  fetchSession.value = fetch
   isLoaded.value = true
 })
 
@@ -16,28 +18,34 @@ async function updateUser(data: Partial<zUser>) {
     return
   }
 
-  // Don't send empty passwords
   const sanitizedData = { ...data }
   if (!sanitizedData.password) {
     delete sanitizedData.password
   }
+  if (sanitizedData.role) {
+    delete sanitizedData.role
+  }
 
-  try {
-    await $fetch(`/api/users/${userId}`, {
-      method: 'PATCH',
-      body: sanitizedData
-    })
+  const sessionUser = session.value.user
+  const hasChanged =
+    sanitizedData.username !== sessionUser.username ||
+    sanitizedData.firstName !== sessionUser.firstName ||
+    sanitizedData.lastName !== sessionUser.lastName ||
+    sanitizedData.email !== sessionUser.email ||
+    new Date(sanitizedData.birthday!).toISOString() !== new Date(sessionUser.birthday).toISOString()
 
-    await fetch()
-    $toast.success('Profile updated.')
+  if (!hasChanged) {
+    $toast.info('Nothing changed.')
+    throw new Error('No changes')
+  }
 
-    // Reset password field after update
-    if ('password' in data) {
-      data.password = ''
-    }
-  } catch (error) {
-    logger.error('Update failed:', error)
-    $toast.error('Failed to update your profile.')
+  logger.info('Sending this data to API:', sanitizedData)
+  await useSafePatch(`/api/users/${userId}`, sanitizedData)
+  await fetchSession?.value?.()
+  $toast.success('Profile updated.')
+
+  if ('password' in data) {
+    data.password = ''
   }
 }
 </script>
@@ -51,7 +59,12 @@ async function updateUser(data: Partial<zUser>) {
 
     <!-- Middle column -->
     <div class="w-full lg:w-1/2 p-6 flex justify-center items-center">
-      <FormUser :user="session?.user" :submit="updateUser" formTitle="User Settings">
+      <FormUser
+        v-if="isLoaded"
+        :user="session?.user"
+        :submit="updateUser"
+        formTitle="User Settings"
+      >
         <template #header>
           <h2 class="text-lg font-bold text-center text-primary">Update Your Profile</h2>
         </template>

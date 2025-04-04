@@ -14,7 +14,8 @@ const defaultUser = {
   lastName: 'tester',
   email: 'test@test.com',
   password: '*gsThXqsAA4_RcWxPEwacCTB',
-  birthday: defaultBirthday
+  birthday: defaultBirthday,
+  createPasskey: true // ✅ registration-specific override
 }
 
 async function handleUserSubmit(
@@ -23,7 +24,7 @@ async function handleUserSubmit(
     passkeyName?: string
   }
 ) {
-  logger.info('Sending this data to API:', data)
+  logger.debug('Sending this data to API:', data)
 
   try {
     await $fetch('/api/auth/signup', {
@@ -46,7 +47,6 @@ async function handleUserSubmit(
     }
 
     await navigateTo('/')
-    window.location.reload()
   } catch (error) {
     logger.error('Error creating user:', error)
     throw error

@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose'
 const credentialsSchema = new Schema(
   {
     ...baseSchemaOptions,
-    userId: { type: Schema.Types.UUID, required: true, ref: 'User' },
+    user: { type: Schema.Types.UUID, required: true, ref: 'User' },
     credentialId: { type: String, required: true, unique: true },
     publicKey: { type: String, required: true },
     counter: { type: Number, default: 1 },
@@ -13,9 +13,6 @@ const credentialsSchema = new Schema(
   },
   { timestamps: true }
 )
-
-// ✅ Ensure index is created at the DB level
-credentialsSchema.index({ credentialId: 1 }, { unique: true })
 
 applyTransformId(credentialsSchema)
 addIdAliasHooks(credentialsSchema)

@@ -2,12 +2,11 @@ import { z } from 'zod'
 import { useDayjs } from '#dayjs'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 
-const isLoggedIn = useUserSession().loggedIn
-
 export function useFormUser(
   schema: z.ZodSchema<any>,
   initialUser?: Partial<z.infer<typeof schema>>
 ) {
+  const isLoggedIn = useUserSession().loggedIn
   const schemaWithoutId = schema.omit({ id: true }) // ✅ Omit `id` from validation
   const dayjs = useDayjs()
   const userLocale = computed(() => dayjs.locale())

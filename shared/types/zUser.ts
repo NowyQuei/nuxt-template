@@ -15,7 +15,7 @@ export const zUser = z.object({
   firstName: z.string().min(1, 'First name is required').max(50),
   lastName: z.string().min(1, 'Last name is required').max(50),
   email: z.string().email('Invalid email address'),
-  credentials: z.array(zCredentials).optional().default([]),
+  credentials: z.array(zCredentials).optional(),
   birthday: z.coerce.date().refine((date) => {
     return dayjs(date).isValid() && dayjs().diff(dayjs(date), 'year') >= 18
   }, 'User must be at least 18 years old'),

@@ -49,6 +49,7 @@ export function addIdAliasHooks(schema: Schema) {
     'findOneAndDelete',
     'findOneAndReplace',
     'findOneAndRemove',
+    'findByIdAndUpdate',
     'findById',
     'updateOne',
     'updateMany',

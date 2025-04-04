@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useSafeDelete } from '@/utils/safeApiFunctions'
+
 const props = defineProps<{
   users: User[]
   loading: boolean
@@ -106,31 +108,29 @@ function getRowItems(row: Row<User>) {
       label: 'Edit user',
       icon: 'i-lucide-edit',
       onSelect: () => {
-        // Emit or navigate to edit page
-        console.log('Edit user:', row.original)
+        console.log('Edit user:', row.original.id)
+        navigateTo(`/users/${row.original.id}/edit`)
       }
     },
     {
       label: 'Delete user',
       icon: 'i-lucide-trash-2',
       onSelect: async () => {
-        try {
-          await $fetch(`/api/users/${row.original.id}`, { method: 'DELETE' })
-          toast.success('User deleted.')
+        const deleted = await useSafeDelete(`/api/users/${row.original.id}`)
+        if (deleted !== null) {
           emit('deleted', row.original.id)
-        } catch {
-          toast.error('Failed to delete user.')
         }
-      }
-    },
-    { type: 'separator' },
-    {
-      label: 'View details',
-      icon: 'i-lucide-eye',
-      onSelect: () => {
-        console.log('Viewing:', row.original)
+        $toast.success('User deleted.')
       }
     }
+    // { type: 'separator' },
+    // {
+    //   label: 'View details',
+    //   icon: 'i-lucide-eye',
+    //   onSelect: () => {
+    //     console.log('Viewing:', row.original)
+    //   }
+    // }
   ]
 }
 </script>

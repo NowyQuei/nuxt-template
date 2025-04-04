@@ -1,15 +1,20 @@
 <script setup lang="ts">
 const props = defineProps<{
   modelValue: string
+  name?: string
 }>()
-
-const isLoggedIn = useUserSession().loggedIn
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
 
 const show = ref(false)
+const isLoggedIn = ref(false)
+
+onMounted(() => {
+  const { loggedIn } = useUserSession()
+  isLoggedIn.value = loggedIn.value
+})
 
 const checkStrength = (str: string) =>
   [
@@ -40,7 +45,7 @@ const text = computed(() => {
 
 <template>
   <div>
-    <UFormField label="Password" :required="!isLoggedIn">
+    <UFormField :label="'Password'" :name="props.name || 'password'" :required="!isLoggedIn">
       <UInput
         :model-value="modelValue"
         @update:model-value="emit('update:modelValue', $event)"
@@ -90,7 +95,6 @@ const text = computed(() => {
             :name="req.met ? 'i-lucide-circle-check' : 'i-lucide-circle-x'"
             class="size-4 shrink-0"
           />
-
           <span class="text-xs font-light">
             {{ req.text }}
             <span class="sr-only">

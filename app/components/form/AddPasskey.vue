@@ -7,20 +7,28 @@ const emit = defineEmits<{
   (e: 'registered'): void
 }>()
 
-const { session, fetch } = useUserSession()
-const { register } = useWebAuthn()
-
 const passkeyName = ref('')
+const email = ref<string | null>(null)
+
+let fetchSession: (() => Promise<void>) | null = null
+let register: ((data: { userName: string; name: string }) => Promise<void>) | null = null
+
+onMounted(() => {
+  const { session, fetch } = useUserSession()
+  const webAuthn = useWebAuthn()
+
+  email.value = session.value?.user?.email ?? null
+  fetchSession = fetch
+  register = webAuthn.register
+})
 
 async function registerPasskey() {
-  const email = session.value?.user?.email
-
-  if (!email) {
+  if (!email.value) {
     $toast.error('No email found in session.')
     return
   }
 
-  if (!passkeyName.value) {
+  if (!passkeyName.value.trim()) {
     $toast.warning('Please enter a name for your passkey.')
     return
   }
@@ -31,12 +39,13 @@ async function registerPasskey() {
   }
 
   try {
-    await register({ userName: email, name: passkeyName.value.trim() })
-    await fetch()
+    await register?.({ userName: email.value, name: passkeyName.value.trim() })
+    await fetchSession?.()
     $toast.success('Passkey registered successfully.')
     passkeyName.value = ''
     emit('registered')
   } catch (e) {
+    logger.error('Passkey registration failed:', e)
     $toast.error('Failed to register passkey.')
   }
 }

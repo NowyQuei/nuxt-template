@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
 
   if (session?.user?.role !== 'admin') {
+    logger.warn(`Unauthorized user creation attempt by user ${session?.user?.id}`)
     return createApiError(event, {
       code: 'unauthorized',
       message: 'You are not authorized.',
@@ -13,9 +14,13 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    logger.debug('Reading request body for user creation...')
     const body = await readBody(event)
 
-    const user = await createUser(body) // Handles validation + DB save
+    logger.debug('Creating user with provided data...')
+    const user = await createUser(body)
+
+    logger.success(`User created successfully: ${user.id}`)
 
     return createApiSuccess(event, {
       status: 201,

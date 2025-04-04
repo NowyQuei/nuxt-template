@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@tanstack/vue-table'
 import type { z } from 'zod'
+
 defineExpose({ refresh: fetchPasskeys })
 
 const UButton = resolveComponent('UButton')
@@ -8,34 +9,28 @@ const passkeys = ref<z.infer<typeof zCredentials>[]>([])
 const isLoading = ref(true)
 
 const { session } = useUserSession()
-
-const table = useTemplateRef('table')
 const rowSelection = ref({})
-const globalFilter = ref('')
 
 async function fetchPasskeys() {
   isLoading.value = true
-  try {
-    const result = await $fetch(`/api/passkeys/${session.value?.user?.id}`)
+  const userId = session.value?.user?.id
+  if (!userId) return
+
+  const result = await useSafeFetch(`/api/passkeys/${userId}`)
+  if (Array.isArray(result)) {
     passkeys.value = result
-  } catch (err) {
-    logger.error('Failed to load passkeys:', err)
-    $toast.error('Could not load passkeys.')
-  } finally {
-    isLoading.value = false
   }
+
+  isLoading.value = false
 }
 
 onMounted(fetchPasskeys)
 
 async function onDelete(id: string) {
-  try {
-    await $fetch(`/api/passkeys/${id}`, { method: 'DELETE' })
+  const success = await useSafeDelete(`/api/passkeys/${id}`)
+  if (success !== null) {
     passkeys.value = passkeys.value.filter((p) => p.id !== id)
     $toast.success('Passkey deleted.')
-  } catch (err) {
-    logger.error('Failed to delete passkey:', err)
-    $toast.error('Could not delete passkey.')
   }
 }
 
@@ -84,15 +79,21 @@ const columns: TableColumn<z.infer<typeof zCredentials>>[] = [
       </slot>
     </template>
 
-    <UTable
-      ref="table"
-      v-model:row-selection="rowSelection"
-      :loading="isLoading"
-      loading-color="primary"
-      loading-animation="carousel"
-      :data="passkeys"
-      :columns="columns"
-    />
+    <div v-if="passkeys.length > 0">
+      <UTable
+        ref="table"
+        v-model:row-selection="rowSelection"
+        :loading="isLoading"
+        loading-color="primary"
+        loading-animation="carousel"
+        :data="passkeys"
+        :columns="columns"
+      />
+    </div>
+
+    <p v-else-if="!isLoading" class="text-sm text-gray-500 text-center">
+      No passkeys registered yet.
+    </p>
 
     <template #footer>
       <slot name="footer">

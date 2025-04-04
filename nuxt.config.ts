@@ -58,7 +58,7 @@ export default defineNuxtConfig({
     public: {
       appName: 'Nuxt Starter Template',
       auth: {
-        globalMiddleware: false, // Set to true if you want auth checks everywhere
+        globalMiddleware: true, // Set to true if you want auth checks everywhere
         redirect: {
           login: '/',
           logout: '/',

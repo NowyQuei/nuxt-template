@@ -10,51 +10,91 @@ const props = defineProps<{
 
 const originalUsername = props.user.username
 const originalEmail = props.user.email
-const { loggedIn } = useUserSession()
-const { state, calendarDate, df } = useFormUser(zUser, props.user)
+
+const loggedIn = ref(false)
+const state = ref<any>(null)
+const calendarDate = ref<any>(null)
+const df = ref<(date: Date) => string>(() => '')
+
 const form = ref()
 
+// ✅ Composables for availability
 const {
   checkAvailability: checkUsername,
-  available: usernameAvailable,
-  checking: checkingUsername
+  checking: checkingUsername,
+  available: usernameAvailable
 } = useUserAvailability()
 
 const {
   checkAvailability: checkEmail,
-  available: emailAvailable,
-  checking: checkingEmail
+  checking: checkingEmail,
+  available: emailAvailable
 } = useUserAvailability()
 
-const formSchema = computed(() => {
-  return loggedIn.value ? zUser.omit({ id: true, password: true }) : zUser.omit({ id: true })
+onMounted(() => {
+  const session = useUserSession()
+  loggedIn.value = session.loggedIn.value
+
+  const formUser = useFormUser(zUser, props.user)
+  state.value = formUser.state
+  calendarDate.value = formUser.calendarDate
+  df.value = formUser.df.value
 })
 
+const isPasswordStrongEnough = computed(() => {
+  if (!state.value?.password) return true
+  return (
+    state.value.password.length >= 12 &&
+    /[A-Z]/.test(state.value.password) &&
+    /[a-z]/.test(state.value.password) &&
+    /[0-9]/.test(state.value.password) &&
+    /[\W_]/.test(state.value.password)
+  )
+})
+
+const formSchema = computed(() =>
+  (loggedIn.value ? zUser.omit({ id: true, password: true }) : zUser.omit({ id: true }))
+    .extend({
+      createPasskey: z.boolean(),
+      passkeyName: z.string().optional()
+    })
+    .refine(
+      (data) => {
+        if (data.createPasskey) return !!data.passkeyName?.trim()
+        return true
+      },
+      {
+        message: 'Passkey name is required if passkey creation is selected.',
+        path: ['passkeyName']
+      }
+    )
+)
+
 async function onUsernameBlur() {
-  if (state.username && state.username !== originalUsername) {
-    await checkUsername('username', state.username)
+  if (state.value?.username && state.value.username !== originalUsername) {
+    await checkUsername('username', state.value.username)
   }
 }
 
 async function onEmailBlur() {
-  if (state.email && state.email !== originalEmail) {
-    await checkEmail('email', state.email)
+  if (state.value?.email && state.value.email !== originalEmail) {
+    await checkEmail('email', state.value.email)
   }
 }
 
 async function preSubmitCheck(): Promise<boolean> {
   let ok = true
 
-  if (state.username && state.username !== originalUsername) {
-    await checkUsername('username', state.username)
+  if (state.value?.username && state.value.username !== originalUsername) {
+    await checkUsername('username', state.value.username)
     if (usernameAvailable.value === false) {
       $toast.error('Username is already taken.')
       ok = false
     }
   }
 
-  if (state.email && state.email !== originalEmail) {
-    await checkEmail('email', state.email)
+  if (state.value?.email && state.value.email !== originalEmail) {
+    await checkEmail('email', state.value.email)
     if (emailAvailable.value === false) {
       $toast.error('Email is already in use.')
       ok = false
@@ -70,14 +110,14 @@ async function onSubmit(event: FormSubmitEvent<z.infer<typeof zUser>>) {
 
   try {
     await props.submit(event.data)
-    $toast.success('User data saved successfully.')
   } catch (error) {
+    if (error?.message === 'No changes') return
     $toast.error('There was a problem saving the user.')
   }
 }
 
 watch(
-  () => state.username,
+  () => state.value?.username,
   (newVal) => {
     if (newVal === originalUsername) {
       usernameAvailable.value = null
@@ -86,7 +126,7 @@ watch(
 )
 
 watch(
-  () => state.email,
+  () => state.value?.email,
   (newVal) => {
     if (newVal === originalEmail) {
       emailAvailable.value = null
@@ -103,7 +143,14 @@ watch(
       </slot>
     </template>
 
-    <UForm ref="form" :state="state" :schema="formSchema" class="space-y-2" @submit="onSubmit">
+    <UForm
+      v-if="state"
+      ref="form"
+      :state="state"
+      :schema="formSchema"
+      class="space-y-2"
+      @submit="onSubmit"
+    >
       <UFormField label="Username" name="username" required>
         <template #description>
           <span v-if="checkingUsername">Checking username...</span>
@@ -147,7 +194,7 @@ watch(
       <UFormField label="Date of Birth" name="birthday" required>
         <UPopover>
           <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
-            {{ state.birthday ? df.format(state.birthday) : 'Select a date' }}
+            {{ state.birthday instanceof Date ? df.format(state.birthday) : 'Select a date' }}
           </UButton>
 
           <template #content>
@@ -167,9 +214,11 @@ watch(
         <UInput v-model="state.passkeyName" placeholder="e.g. MacBook Touch ID" class="w-full" />
       </UFormField>
 
-      <FormPasswordInput v-model="state.password" />
+      <FormPasswordInput v-model="state.password" name="password" />
 
-      <UButton type="submit" block color="primary"> Save </UButton>
+      <UButton type="submit" block color="primary" :disabled="!isPasswordStrongEnough">
+        Save
+      </UButton>
     </UForm>
 
     <template v-if="!loggedIn" #footer>

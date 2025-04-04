@@ -25,14 +25,14 @@ export function validateUserInput(body: any) {
  * ✅ Removes sensitive fields from user data
  * - Removes `password`
  * - Removes `isActive`
+ * - Removes `credentials`
  */
-export function sanitizeUser(user: unknown) {
+export function sanitizeUser(user: User) {
   const plainUser =
     typeof user === 'object' && user !== null && 'toJSON' in user ? (user as any).toJSON() : user
 
-  const { password, isActive, __v, createdAt, updatedAt, ...safe } = plainUser as z.infer<
-    typeof zUserWithMeta
-  >
+  const { password, isActive, __v, createdAt, updatedAt, credentials, ...safe } =
+    plainUser as z.infer<typeof zUserWithMeta>
 
   return safe
 }

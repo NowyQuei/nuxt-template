@@ -1,10 +1,12 @@
 import { getUsers } from '@@/server/services/userService'
 
 export default defineEventHandler(async (event) => {
-  logger.info('GET /api/users')
+  logger.info('triggered /api/users/index.get.ts')
+
   const session = await getUserSession(event)
 
   if (session?.user?.role !== 'admin') {
+    logger.warn(`Unauthorized access attempt by user ${session?.user?.id}`)
     return createApiError(event, {
       code: 'unauthorized',
       message: 'You are not authorized.',
@@ -13,10 +15,14 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    logger.debug('Fetching all users...')
     const users = await getUsers()
+    logger.success(`Fetched ${users.length} users`)
 
     return createApiSuccess(event, {
-      data: users
+      status: 200,
+      data: users,
+      message: 'Users retrieved successfully.'
     })
   } catch (error) {
     logger.error('Error fetching users:', error)
